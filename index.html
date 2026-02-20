@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLHR0 | High-End Barcode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BLHR0 | QR System</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -27,6 +27,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
         .container {
@@ -38,11 +39,9 @@
             border-radius: 32px;
             box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             text-align: center;
             animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            display: flex;
-            flex-direction: column;
         }
 
         @keyframes fadeIn {
@@ -50,21 +49,13 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Area Barcode Sekarang di Atas */
         .result-area {
-            order: -1; /* Memaksa ke urutan paling atas dalam flexbox */
             margin-bottom: 2rem;
             padding: 20px;
             background: #ffffff;
             border-radius: 20px;
-            display: none; /* Sembunyi sebelum di-generate */
-            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none;
             box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-30px) scale(0.9); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         h1 {
@@ -94,15 +85,14 @@
             font-size: 1rem;
             box-sizing: border-box;
             text-align: center;
-            transition: all 0.3s;
             margin-bottom: 1rem;
+            outline: none;
         }
 
-        input:focus {
-            outline: none;
-            border-color: #a855f7;
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         button {
@@ -114,19 +104,19 @@
             border-radius: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
             text-transform: uppercase;
             letter-spacing: 1.5px;
+            transition: 0.3s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(168, 85, 247, 0.4);
+        button:active {
+            transform: scale(0.98);
         }
 
-        #barcode {
-            max-width: 100%;
-            height: auto;
+        #btnPrint {
+            display: none;
+            background: #ffffff;
+            color: #000;
         }
 
         .footer-note {
@@ -135,7 +125,11 @@
             color: rgba(255,255,255,0.2);
             text-transform: uppercase;
             letter-spacing: 4px;
-            font-weight: 600;
+        }
+
+        #barcode {
+            width: 100%;
+            height: auto;
         }
     </style>
 </head>
@@ -146,44 +140,73 @@
         <svg id="barcode"></svg>
     </div>
 
-    <h1>BLHR0 BARCODE</h1>
-    <p class="subtitle">System pembuat kode batang<br>Staging Store BLHR0</p>
+    <h1>BLHR0 SYSTEM</h1>
+    <p class="subtitle">QR Code Generator & Printer<br>Staging Store BLHR0</p>
     
-    <input type="text" id="userInput" placeholder="Input number..." autocomplete="off">
-    <button onclick="generateBarcode()">Generate System</button>
+    <input type="text" id="userInput" placeholder="Masukkan Kode..." autocomplete="off">
+    
+    <div class="btn-group">
+        <button onclick="generateUI()">Generate System</button>
+        <button id="btnPrint" onclick="printAsQR()">Print QR Code</button>
+    </div>
 
     <div class="footer-note">BLHR0-GUNUNGKIDUL</div>
 </div>
 
 <script>
-    function generateBarcode() {
+    function generateUI() {
         const value = document.getElementById('userInput').value;
         const container = document.getElementById('barcodeContainer');
+        const btnPrint = document.getElementById('btnPrint');
         
         if (value.trim() === "") {
-            const input = document.getElementById('userInput');
-            input.style.borderColor = "#ec4899";
-            setTimeout(() => input.style.borderColor = "rgba(255, 255, 255, 0.1)", 1000);
+            document.getElementById('userInput').style.borderColor = "#ec4899";
             return;
         }
 
-        // Tampilkan container
         container.style.display = "block";
+        btnPrint.style.display = "block";
 
+        // Tampilan di layar tetap Barcode agar terlihat keren (UI Awal)
         JsBarcode("#barcode", value, {
             format: "CODE128",
             lineColor: "#000",
-            width: 2.3,
-            height: 65,
+            width: 2,
+            height: 70,
             displayValue: true,
-            fontSize: 15,
+            fontSize: 16,
             font: "Plus Jakarta Sans",
             margin: 10
         });
     }
 
-    document.getElementById('userInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') generateBarcode();
+    async function printAsQR() {
+        const value = document.getElementById('userInput').value;
+        if (!value) return;
+
+        // FORMAT INSTRUKSI QR CODE (Hasil Cetak Pasti Berhasil)
+        let dataCetak = "<111>STAGING STORE BLHR0\n";
+        dataCetak += "<110>GUNUNGKIDUL\n";
+        dataCetak += "<010>--------------------------\n";
+        // <QR>Align(1=Center)#Size(50)#Value
+        dataCetak += `<QR>1#50#${value}\n`;
+        dataCetak += `<011>${value}\n`; // Teks tebal di bawah QR
+        dataCetak += "<010>--------------------------\n";
+        dataCetak += "<010>QR SYSTEM GENERATED\n\n\n";
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ text: dataCetak });
+            } catch (err) {
+                console.log("Dibatalkan");
+            }
+        } else {
+            window.location.href = "bluetoothprint://print?text=" + encodeURIComponent(dataCetak);
+        }
+    }
+
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') generateUI();
     });
 </script>
 
